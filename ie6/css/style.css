@@ -1,0 +1,25 @@
+ * { margin: 0; padding: 0; }
+html { height: 100%; margin-bottom: 1px; }
+#header,
+#main,
+#footer { clear:both; overflow: hidden; }
+body { color: #333; text-align:left; font:13px "Segoe UI", Tahoma, Geneva, sans-serif; background-color:#DBF3FD }
+.content { margin:0 auto; width:910px; overflow:hidden; padding:0; }
+a { color:#005987 }
+a:hover { text-decoration:none }
+p { line-height:1.5em; margin:0 10px 1em 20px; text-indent:0 }
+h1,
+h2 { font-size:24px; color:#F3801F; font-weight:normal; line-height:1.8em; margin:0 0 0.5em 20px; }
+h3 { font-size:18px; color:#F3801F; font-weight:normal; ; }
+#header { background:url(../img/h.jpg) no-repeat top; height:158px }
+#lang { float:right; margin-top:57px; color: #666 }
+#lang span { color:#F3801F; }
+.brows td a { font-size:17px }
+#main { background:url(../img/bg_span_wol.gif) repeat-y top }
+#footer { background:url(../img/f.jpg) no-repeat top; height:131px }
+#td1,
+#td2,
+#td3 { width:239px; height:119px; vertical-align:top; padding:15px 30px 0 25px; }
+#td1 { background:url(../img/td1.jpg) top no-repeat }
+#td2 { background:url(../img/td2.jpg) top no-repeat }
+#td3 { background:url(../img/td3.jpg) top no-repeat }
