@@ -1,0 +1,32 @@
+table {
+  font-size: 11pt;
+  color: #5FBFFF;
+  border:0;
+  padding:0;
+  border-collapse:collapse;
+}
+table td {
+  padding:0;
+}
+table.line {
+  margin-top:10px;
+  width:100%;
+}
+table.post {
+  margin-top:30px;
+  width:100%;
+}
+table.post td.post-gt {
+  width:1px;
+}
+table.post td.post-code {
+  text-align:center;
+  width:100px;
+  background: url(../dashedborder.png);
+  background-position-x: 99px;
+  background-position-y: 3px;
+  background-repeat: repeat-y;
+}
+table.post td.post-content {
+  padding-left: 10px;
+}
