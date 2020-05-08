@@ -7,7 +7,7 @@
 	<meta name="description" content="">
     
         
-        <link id="favicon" rel="shortcut icon" href="f1.png" type="image/x-icon">
+        <link id="favicon" rel="shortcut icon" href="favicon.gif" type="image/gif">
 	<link rel="stylesheet" href="css/styles.css" type="text/css" media="screen, projection">
 	<link rel="stylesheet" type="text/css" href="css/scrollbars.css">
 	
@@ -28,20 +28,6 @@
         <script type="text/javascript">
             var commands = [];
             var command_number;
-            
-            function animate_favicon () {
-                if ($('link[rel$=icon]').attr("href") == 'f1.png') {
-                    $('link[rel$=icon]').remove();
-                    $('head').append($('<link rel="shortcut icon" type="image/x-icon"/>').attr( 'href', "f2.png" ) );
-                } else {
-                    $('link[rel$=icon]').remove();
-                    $('head').append($('<link rel="shortcut icon" type="image/x-icon"/>').attr( 'href', "f1.png" ) );
-                }
-                
-                setTimeout(animate_favicon, 600);
-            }
-            
-            setTimeout(animate_favicon, 600);
             
             function loading () {
                 str = 'Loading...';
