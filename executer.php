@@ -403,11 +403,13 @@ class Executer {
             $_SESSION['topic_id'] = $topic_id;
             $_SESSION['board_id'] = $thread['board_id'];
             $posts_res = mysql_query('
-                SELECT posts.*, codes.code FROM posts
-                LEFT JOIN codes ON posts.user_id = codes.user_id AND codes.topic_id = "'.$_SESSION['topic_id'].'"
-                WHERE posts.topic_id = '.$thread['id'].'
-                ORDER BY posts.id
-                LIMIT '.(($_SESSION['page']-1)*self::posts_per_page).', '.self::posts_per_page 
+                SELECT posts_lim.*, code FROM
+                (SELECT * FROM posts WHERE topic_id = '.$thread['id'].' 
+                    ORDER BY id
+                    LIMIT '.(($_SESSION['page']-1)*self::posts_per_page).', '.self::posts_per_page.'
+                ) as posts_lim
+                LEFT JOIN codes ON posts_lim.user_id = codes.user_id AND codes.topic_id = "'.$_SESSION['topic_id'].'"
+                ORDER BY posts_lim.id'
             );
             
             if (!$posts_res) {
