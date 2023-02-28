@@ -1,8 +1,8 @@
 <?php
-
+require_once 'config.php';
 require_once 'viewer.php';
 
-error_reporting(0);
+mb_internal_encoding('UTF-8');
 
 class Executer {
     
@@ -12,25 +12,25 @@ class Executer {
     private $connection;
 
     
-    public function Executer() {
-        $this->connection = mysql_connect('localhost', 'xxxxxx', 'xxxxxx');
-        mysql_select_db('name', $this->connection);
-        mysql_query("SET NAMES 'utf8'"); 
-        mysql_query("SET CHARACTER SET 'utf8'");
-        mysql_query("SET SESSION collation_connection = 'utf8_general_ci'");
+    public function __construct() {
+        $this->connection = new mysqli(DB_HOST, DB_USER, DB_PASSWD, DB_DATABASE);
+        $this->connection->query("SET NAMES '".DB_CHARSET."'"); 
+        $this->connection->query("SET CHARACTER SET '".DB_CHARSET."'");
+        $this->connection->query("SET SESSION collation_connection = '".DB_COLLATION."'");
         
-        $user_timezone_row = mysql_fetch_assoc(mysql_query('SELECT timezone, banned FROM users WHERE id = "'.$_SESSION['user_id'].'"'));
-        mysql_query('SET time_zone = "'.$user_timezone_row['timezone'].'"');
+        @$user_timezone_row = $this->connection->query('SELECT timezone, banned FROM users WHERE id = "'.$_SESSION['user_id'].'"')->fetch_assoc();
+        if ($user_timezone_row)
+            $this->connection->query('SET time_zone = "'.$user_timezone_row['timezone'].'"');
         
-        if ($user_timezone_row['banned']) {
+        if (@$user_timezone_row['banned']) {
             Viewer::error('You suck');
             exit;
         }
         
-        $now_row = mysql_fetch_assoc(mysql_query('SELECT NOW() as n'));
+        $now_row = $this->connection->query('SELECT NOW() as n')->fetch_assoc();
         $this->now = $now_row['n'];
         
-        mysql_query('
+        $this->connection->query('
                 UPDATE users SET
                   ip = "'.$_SERVER['REMOTE_ADDR'].'",
                   last_activity = NOW()
@@ -41,9 +41,9 @@ class Executer {
         session_start();
         unset($_SESSION['edit']);
         if ($_SESSION['user_id']) {
-            $row_name = mysql_fetch_assoc(mysql_query(
+            $row_name = $this->connection->query(
                     'SELECT name FROM users WHERE id = "'.$_SESSION['user_id'].'"'
-            ));
+            )->fetch_assoc();
             if ($row_name) echo '<br>You are logged in as '.$row_name['name'].'<br><br>';
         }
     }
@@ -79,10 +79,10 @@ class Executer {
     }
     
     private function get_boards_pages_count ($board_id) {
-        $count_row = mysql_fetch_assoc(mysql_query('
+        $count_row = $this->connection->query('
                 SELECT count(*) as c FROM posts WHERE
                 board_id = "'.$board_id.'" AND topic_id = 0
-        '));
+        ')->fetch_assoc();
         
         $pages_count = ceil($count_row['c'] / self::topics_per_page);
         if ($pages_count == 0) $pages_count = 1;
@@ -91,30 +91,30 @@ class Executer {
     }
     
     private function get_topics_posts_count($topic_id) {
-        $count_row = mysql_fetch_assoc(mysql_query('
+        $count_row = $this->connection->query('
                 SELECT count(*) as c FROM posts
                 WHERE topic_id = '.$topic_id
-        ));
+        )->fetch_assoc();
         
         return $count_row['c'];
     }
     
     private function get_boards_topics_count($board_id) {
-        $count_row = mysql_fetch_assoc(mysql_query('
+        $count_row = $this->connection->query('
                 SELECT count(*) as c FROM posts
                 WHERE board_id = '.$board_id.'
                 AND topic_id = 0
-        '));
+        ')->fetch_assoc();
         
         return $count_row['c'];
     }
     
     private function get_rvt_topics_count() {
-        $count_row = mysql_fetch_assoc(mysql_query('
+        $count_row = $this->connection->query('
                 SELECT count(*) as c FROM posts
                 INNER JOIN users_posts_rv ON posts.id = users_posts_rv.topic_id
                 WHERE posts.topic_id = 0 AND users_posts_rv.user_id = "'.$_SESSION['user_id'].'"
-        '));
+        ')->fetch_assoc();
         
         return $count_row['c'];
     }
@@ -165,25 +165,25 @@ class Executer {
     
     private function update_posts_rv($topic_id) {
         
-        $rv_row_exists = mysql_num_rows(mysql_query('
+        $rv_row_exists = $this->connection->query('
                 SELECT id FROM users_posts_rv
                 WHERE user_id = "'.$_SESSION['user_id'].'"
                 AND topic_id = "'.$topic_id.'"
-        '));
+        ')->num_rows;
         
-        $last_post_row = mysql_fetch_assoc(mysql_query('
+        $last_post_row = $this->connection->query('
                 SELECT MAX(id) as max_id FROM posts
                 WHERE topic_id = "'.$topic_id.'"
                 OR id = "'.$topic_id.'"
-        '));
+        ')->fetch_assoc();
         
         if (!$rv_row_exists) {        
-            mysql_query('
+            $this->connection->query('
                     INSERT INTO users_posts_rv (user_id, topic_id, post_id, visited_date) VALUES
                     ("'.$_SESSION['user_id'].'", "'.$topic_id.'", "'.$last_post_row['max_id'].'", NOW())'
             );
         } else {
-            mysql_query('
+            $this->connection->query('
                     UPDATE users_posts_rv SET
                       post_id = "'.$last_post_row['max_id'].'",
                       visited_date = NOW()
@@ -195,19 +195,19 @@ class Executer {
     
     private function get_topics_news($topic_id) {
      
-        $rv_post_row = mysql_fetch_assoc(mysql_query('
+        $rv_post_row = $this->connection->query('
                 SELECT post_id FROM users_posts_rv
                 WHERE user_id = "'.$_SESSION['user_id'].'"
                 AND topic_id = "'.$topic_id.'"
-        '));
+        ')->fetch_assoc();
         
         if ($rv_post_row) {
                
-            $new_posts_count_row = mysql_fetch_assoc(mysql_query('
+            $new_posts_count_row = $this->connection->query('
                     SELECT count(*) as c FROM posts
                     WHERE topic_id = "'.$topic_id.'"
                     AND id > "'.$rv_post_row['post_id'].'"
-            '));
+            ')->fetch_assoc();
             
             if ($new_posts_count_row && (int)$new_posts_count_row['c'] > 0)
                 return '<span class="mark">+'.(int)$new_posts_count_row['c'].'</span>';  
@@ -215,39 +215,39 @@ class Executer {
     }
 
     private function REGISTER($args) {
-        $registered = (bool)mysql_fetch_assoc(mysql_query('
+        $registered = (bool)($this->connection->query('
                 SELECT id
                 FROM users
                 WHERE name = "'.strtolower($args['u']).'"'
-        ));
+        )->fetch_assoc());
         
         if ($registered) {
             Viewer::message('username already in use');
         } else {
           /*
-            $invite = mysql_fetch_assoc(mysql_query('
+            $invite = $this->connection->query('
                 SELECT * FROM invites
                 WHERE invite = "'.$args['i'].'"'
-            ));
+            )->fetch_assoc();
         
             if (!$invite) {
                 Viewer::error('Invalid invitation code');
                 exit;
             } else {
-                mysql_query('DELETE FROM invites WHERE id = "'.$invite['id'].'"');
+                $this->connection->query('DELETE FROM invites WHERE id = "'.$invite['id'].'"');
             }
           */
             
-            $res = mysql_query('
+            $res = $this->connection->query('
                     INSERT INTO users (name, password)
                     VALUES ("'.$args['u'].'", "'.md5($args['p']).'")'
             );
             
-            $user_id = mysql_insert_id();
+            $user_id = $this->connection->insert_id;
             
             if ($res) {
-                mysql_query('INSERT INTO invites (user_id, invite) VALUES ("'.$user_id.'", "'.$this->generate_invite_code().'")');
-                mysql_query('INSERT INTO invites (user_id, invite) VALUES ("'.$user_id.'", "'.$this->generate_invite_code().'")');
+                $this->connection->query('INSERT INTO invites (user_id, invite) VALUES ("'.$user_id.'", "'.$this->generate_invite_code().'")');
+                $this->connection->query('INSERT INTO invites (user_id, invite) VALUES ("'.$user_id.'", "'.$this->generate_invite_code().'")');
                 
                 Viewer::message('you are now registered');
             }
@@ -256,12 +256,12 @@ class Executer {
     }
     
     private function LOGIN($args) {
-        $user = mysql_fetch_assoc(mysql_query('
+        $user = $this->connection->query('
             SELECT id
             FROM users
             WHERE name = "'.strtolower($args['u']).'"
             AND password = "'.md5($args['p']).'"'
-        ));
+        )->fetch_assoc();
         
         if ($user) {
             $_SESSION['user_id'] = $user['id'];
@@ -288,8 +288,8 @@ class Executer {
         unset($_SESSION['page']);
         
         $content = '<br>The list of existing boards:<br><br>';
-        $res = mysql_query('SELECT * FROM boards WHERE public = 1 ORDER BY id');
-        while ($row = mysql_fetch_assoc($res)){
+        $res = $this->connection->query('SELECT * FROM boards WHERE public = 1 ORDER BY id');
+        while ($row = mysqli_fetch_assoc($res)){
             $content .= '['.$row['id'].'] '.$row['name'].'
                          <span class="pendant">| '.$this->get_boards_topics_count($row['id']).' topics</span><br>';
         }
@@ -302,9 +302,9 @@ class Executer {
         
         $_SESSION['topic_id'] = 0;
         $_SESSION['page'] = (int)$args['p'] ? (int)$args['p'] : 1;
-        $board = mysql_fetch_assoc(mysql_query(
+        $board = $this->connection->query(
                 'SELECT * FROM boards WHERE id = "'.$args['n'].'"'
-        ));
+        )->fetch_assoc();
         
         if (!$board) {
             Viewer::error('Board '.$args['n'].' does not exist');
@@ -315,7 +315,7 @@ class Executer {
             $pages_count = $this->get_boards_pages_count($_SESSION['board_id']);
             $path = 'BOARD '.$args['n'].' '.$_SESSION['page'].'/'.$this->get_boards_pages_count($_SESSION['board_id']);
             
-            $topics_res = mysql_query('
+            $topics_res = $this->connection->query('
                 SELECT * FROM posts
                 WHERE board_id ='.$args['n'].'
                 AND topic_id = 0
@@ -346,7 +346,7 @@ class Executer {
         
         $path = 'RVT '.$_SESSION['page'].'/'.$pages_count;
         
-        $topics_res = mysql_query('
+        $topics_res = $this->connection->query('
                 SELECT posts.* FROM posts
                 INNER JOIN users_posts_rv ON posts.id = users_posts_rv.topic_id
                 WHERE posts.topic_id = 0 AND users_posts_rv.user_id = "'.$_SESSION['user_id'].'"
@@ -358,17 +358,17 @@ class Executer {
     }
     
     private function NEWTOPIC($args) {
-        $res = mysql_query('
+        $res = $this->connection->query('
             INSERT INTO posts (user_id, board_id, title, topic_id, content, creation_date, bump_date) VALUES
             ("'.$_SESSION['user_id'].'", "'.$_SESSION['board_id'].'", "'.$args['t'].'", "0", "'.$args['c'].'", NOW(), NOW())
         ');
         
-        $topic_id = mysql_insert_id();
+        $topic_id = $this->connection->insert_id;
         
         if (!$res) {
             Viewer::error('Error creating topic');
         } else {
-            mysql_query('
+            $this->connection->query('
                 INSERT INTO codes (user_id, topic_id, code)
                 VALUES ("'.$_SESSION['user_id'].'", "'.$topic_id.'", "0")
             ');
@@ -386,11 +386,11 @@ class Executer {
         $_SESSION['page'] = $page > $pages_count ? $pages_count : $page;
         if ($_SESSION['page'] < 1) $_SESSION['page'] = 1;
         
-        $thread = mysql_fetch_assoc(mysql_query('
+        $thread = $this->connection->query('
                 SELECT posts.*, boards.name as board_name FROM posts
                 INNER JOIN boards ON posts.board_id = boards.id
                 WHERE posts.id = '.$topic_id.' AND topic_id = 0'
-        ));   
+        )->fetch_assoc();   
         
         
         if (!$thread) {
@@ -402,12 +402,14 @@ class Executer {
             
             $_SESSION['topic_id'] = $topic_id;
             $_SESSION['board_id'] = $thread['board_id'];
-            $posts_res = mysql_query('
-                SELECT posts.*, codes.code FROM posts
-                LEFT JOIN codes ON posts.user_id = codes.user_id AND codes.topic_id = "'.$_SESSION['topic_id'].'"
-                WHERE posts.topic_id = '.$thread['id'].'
-                ORDER BY posts.id
-                LIMIT '.(($_SESSION['page']-1)*self::posts_per_page).', '.self::posts_per_page 
+            $posts_res = $this->connection->query('
+                SELECT posts_lim.*, code FROM
+                (SELECT * FROM posts WHERE topic_id = '.$thread['id'].' 
+                    ORDER BY id
+                    LIMIT '.(($_SESSION['page']-1)*self::posts_per_page).', '.self::posts_per_page.'
+                ) as posts_lim
+                LEFT JOIN codes ON posts_lim.user_id = codes.user_id AND codes.topic_id = "'.$_SESSION['topic_id'].'"
+                ORDER BY posts_lim.id'
             );
             
             if (!$posts_res) {
@@ -423,7 +425,7 @@ class Executer {
                             '<br><br>Page '.$_SESSION['page'].'/'.$this->get_topics_pages_count($_SESSION['topic_id']);
                 
                 
-                while ($row = mysql_fetch_assoc($posts_res)) {
+                while ($row = mysqli_fetch_assoc($posts_res)) {
                     
                     $is_op = $row['user_id'] == $thread['user_id'];
                     $user_code = $is_op ? '[OP]' : $this->get_user_code($row['code']);
@@ -458,20 +460,20 @@ class Executer {
     
     private function REPLY($args) {
 
-        $row = mysql_fetch_assoc(mysql_query('
+        $row = $this->connection->query('
                 SELECT id FROM codes
                 WHERE user_id = '.$_SESSION['user_id'].' AND topic_id = '.$_SESSION['topic_id'].'
                 LIMIT 1
-        '));
+        ')->fetch_assoc();
         
         if (!$row) {        
-            $code_row = mysql_fetch_assoc(mysql_query('
+            $code_row = $this->connection->query('
                     SELECT MAX(code) as c FROM codes
                     WHERE topic_id = '.$_SESSION['topic_id']
-            ));
+            )->fetch_assoc();
             $code = (int)$code_row['c'] + 1;
             
-            $res = mysql_query('
+            $res = $this->connection->query('
                 INSERT INTO codes(user_id, topic_id, code) VALUES
                 ("'.$_SESSION['user_id'].'", "'.$_SESSION['topic_id'].'", "'.$code.'")
             ');
@@ -483,12 +485,12 @@ class Executer {
             Viewer::error('Error creating post');
         } else {
             
-            $res_post = mysql_query('
+            $res_post = $this->connection->query('
                 INSERT INTO posts (user_id, board_id, topic_id, content, creation_date)
                 VALUES ("'.$_SESSION['user_id'].'", "'.$_SESSION['board_id'].'", "'.$_SESSION['topic_id'].'", "'.$args['m'].'", NOW())
             ');
             
-            mysql_query('UPDATE posts SET bump_date = NOW() WHERE id = "'.$_SESSION['topic_id'].'"');            
+            $this->connection->query('UPDATE posts SET bump_date = NOW() WHERE id = "'.$_SESSION['topic_id'].'"');            
             
             if (!$res_post) Viewer::error('Error creating post');
             else $this->TOPIC(array('n'=>$_SESSION['topic_id'], 'p'=>$_SESSION['page']));
@@ -559,17 +561,17 @@ class Executer {
     }
         
     private function DELETE($args) {
-        $post = mysql_fetch_assoc(mysql_query('
+        $post = $this->connection->query('
                 SELECT id FROM posts
                 WHERE id="'.$args['p'].'"
                 AND user_id = "'.$_SESSION['user_id'].'"
                 AND topic_id != 0
-        '));
+        ')->fetch_assoc();
         
         if (!$post) {
             Viewer::error('Operation is not possible');
         } else {
-            $res = mysql_query('DELETE FROM posts WHERE id = "'.$args['p'].'"');            
+            $res = $this->connection->query('DELETE FROM posts WHERE id = "'.$args['p'].'"');            
             if (!$res) Viewer::error('Error deleting post');
             else Viewer::message('Post has been deleted');
         }
@@ -578,7 +580,7 @@ class Executer {
     
     
     public function edit_post($post_id, $newcontent) {
-        $res = mysql_query('
+        $res = $this->connection->query('
             UPDATE posts SET
               content = "'.$newcontent.'",
               changing_date = NOW()
@@ -591,11 +593,11 @@ class Executer {
 
 
     private function EDIT($args) {
-        $post = mysql_fetch_assoc(mysql_query('
+        $post = $this->connection->query('
                 SELECT id, content FROM posts
                 WHERE id="'.$args['p'].'"
                 AND user_id = "'.$_SESSION['user_id'].'"
-        '));
+        ')->fetch_assoc();
         
         if (!$post) {
             Viewer::error('Operation is not possible');
@@ -608,8 +610,8 @@ class Executer {
 
 
     private function TIMEZONE($args) {
-        $res = mysql_query('SET time_zone = "'.$args['u'].'"');
-        if ($res) $res = mysql_query('
+        $res = $this->connection->query('SET time_zone = "'.$args['u'].'"');
+        if ($res) $res = $this->connection->query('
             UPDATE users SET timezone = "'.$args['u'].'"
             WHERE id = "'.$_SESSION['user_id'].'"'
         );
@@ -619,18 +621,18 @@ class Executer {
     }
     
     private function INVITES ($args) {
-        $res = mysql_query('SELECT invite FROM invites WHERE user_id = "'.$_SESSION['user_id'].'"');
+        $res = $this->connection->query('SELECT invite FROM invites WHERE user_id = "'.$_SESSION['user_id'].'"');
         if (!$res) {
             Viewer::error('Error reading your invites');
         } else {
-            $count_row = mysql_fetch_assoc(mysql_query('
+            $count_row = $this->connection->query('
                 SELECT count(*) as c FROM invites
                 WHERE user_id = "'.$_SESSION['user_id'].'"
-            '));
+            ')->fetch_assoc();
             
             if ($count_row['c']) {
                 $invites = ''; $num = 0;
-                while ($row = mysql_fetch_assoc($res))
+                while ($row = mysqli_fetch_assoc($res))
                     $invites .= ++$num.': '.$row['invite'].'<br>';
                 Viewer::message($invites);
             } else {
@@ -722,9 +724,9 @@ class Executer {
 
     
     private function CREATEINVITES () {
-        $res = mysql_query('SELECT id FROM users WHERE 1');
-        while ($row = mysql_fetch_assoc($res)) {
-            mysql_query('
+        $res = $this->connection->query('SELECT id FROM users WHERE 1');
+        while ($row = mysqli_fetch_assoc($res)) {
+            $this->connection->query('
                 INSERT INTO invites (user_id, invite)
                 VALUES ("'.$row['id'].'", "'.$this->generate_invite_code().'")
             ');
@@ -817,7 +819,7 @@ class Executer {
         
         $content .= 'Page '.$_SESSION['page'].'/'.$pages_count.'<br><br>';
         
-        while ($row = mysql_fetch_assoc($topics_res)){
+        while ($row = mysqli_fetch_assoc($topics_res)){
             $content .= '
                 <table><tr>
                   <td class="postsnumber" style="width:60px">['.$row['id'].']</td>

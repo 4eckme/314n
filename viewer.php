@@ -3,7 +3,7 @@ mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
 class Viewer
 {
-    private function Viewer() { }
+    private function __construct() { }
     
     static function message($message) {
         

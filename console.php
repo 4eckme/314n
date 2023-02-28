@@ -127,7 +127,7 @@ class Console
         
     }
     
-    public function Console() {
+    public function __construct() {
         $this->init_rules();
         session_start();
         
@@ -145,7 +145,7 @@ class Console
     public function parse($input) {
         $input = str_replace('  ', ' ', htmlspecialchars(trim(addslashes($input))));
         list($command) = explode(' ', $input);
-        $command = strtoupper($command);
+        $command = mb_strtoupper($command);
         $argstr = substr($input, strlen($command));
         
         $keys = array();
