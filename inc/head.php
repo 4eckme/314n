@@ -26,7 +26,7 @@
 <script src="js/main.js" type="text/javascript"></script>
 
 </head>
-<body>
+<body class="native-scrollbar">
 <script>document.head.querySelector("link[href='css/nojs.css']").href = "css/yesjs.css"</script>
 <div class="border"></div>
 <div id="board">

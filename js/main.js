@@ -32,7 +32,14 @@ $(window).resize(function () {
 });
   
 $(document).ready(function() {
-    $("#scrollTest").scrollbars();
+    // Check for styled scrollbar support
+    var $st = $("#scrollTest")
+    , cst = getComputedStyle($st[0], '::-webkit-scrollbar')
+    if(!((CSS.supports('scrollbar-width: thin') || (cst.hasOwnProperty('width') && cst.width == '9px')))) {
+        console.log('Native scrollbars not supported')
+        $('body').removeClass('native-scrollbar')
+        $st.scrollbars()
+    }
     $('#console').width($("#scrollTest").width()-50);
     $('#cmd').keydown(function (event) {
     
