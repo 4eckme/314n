@@ -1,7 +1,7 @@
 <?php
 
-require_once 'viewer.php';
-require_once 'executer.php';
+require_once 'inc/viewer.php';
+require_once 'inc/executer.php';
 
 class Console
 {

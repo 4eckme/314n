@@ -2,7 +2,20 @@
   display: initial!important;
 }
 #scrollTest {
-  padding: 10px;
+  width: calc(100% - 22px);
+  height: calc(100% - 20px);
+  margin: 10px;
+  margin-right: 12px;
+}
+#scrollTest::-webkit-scrollbar {
+  width: 9px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 3px;
+}
+#scrollTest::-webkit-scrollbar-thumb {
+  background: rgba(98, 226, 255, .25);
+  border-radius: 3px;
+  border: 1px solid black;
 }
 button {
   cursor: pointer;
@@ -12,7 +25,7 @@ button {
   border: inherit;
 }
 button:hover {
-  background-color: #2F9CC8;
+  background-color: #5ec0fe;
   color: #000;
 }
 button::before {
@@ -38,48 +51,34 @@ textarea#cmd, #cmd_i {
 .line {
   margin-top: 10px;
   width: calc(100% - 20px);
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-rows: auto 1fr;
 }
-#path {
-  grid-column: 1;
-  grid-row: 1;
-}
-label {
-  grid-column: 1/3;
-  grid-row: 2;
-}
-#cmd, #cmd_i {
-  grid-column: 2;
-  grid-row: 1/3;
-  
-}
-#cmd {
-  grid-row: 1/3;
-}
-#cmd_i {
-  grid-column: 2;
-  grid-row: 1;
+.input-container {
+  display: flex;
+  flex-direction: row;
 }
 .submit-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 2ch;
+}
+#cmd, #cmd_i {
+  flex-grow: 1;
+}
+.submit-container button {
   display: none;
-  grid-column: 3;
-  grid-row: 2;
+  margin: auto;
 }
 label[for='input-type-switch'] {
-  grid-column: 3;
-  grid-row: 1;
   cursor: pointer;
 }
 label[for='input-type-switch']::before {
   content: '[ ] ';
-  margin-left: 2ch;
 }
-
 #cmd {
   display: none;
   overflow: auto!important;
+  width: auto!important;
 }
 input[name=multiline]:checked + textarea {
   display: block!important;
@@ -87,12 +86,15 @@ input[name=multiline]:checked + textarea {
 input[name=multiline]:checked + textarea + #cmd_i {
   display: none!important;
 }
-input[name=multiline]:checked + textarea + #cmd_i + label::before  {
-  content: '[+] '
+input[name=multiline]:checked + textarea + #cmd_i + .submit-container label::before  {
+  content: '[x] ';
 }
-input[name=multiline]:checked + textarea + #cmd_i + label + .submit-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+input[name=multiline]:checked + textarea + #cmd_i + .submit-container button {
+  display: initial;
+}
+
+input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill,
+input:-webkit-autofill:hover, textarea:-webkit-autofill:hover, select:-webkit-autofill:hover,
+input:-webkit-autofill:focus, textarea:-webkit-autofill:focus, select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #5ec0fe inset; /* Chrome you fucking donkey */
 }

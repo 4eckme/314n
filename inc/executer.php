@@ -1,5 +1,5 @@
 <?php
-require_once 'config.php';
+require_once realpath(dirname(__FILE__)).'/../config.php';
 require_once 'viewer.php';
 
 mb_internal_encoding('UTF-8');
@@ -38,13 +38,12 @@ class Executer {
     }
     
     public function check_login() {
-        session_start();
         unset($_SESSION['edit']);
         if ($_SESSION['user_id']) {
             $row_name = $this->connection->query(
                     'SELECT name FROM users WHERE id = "'.$_SESSION['user_id'].'"'
             )->fetch_assoc();
-            if ($row_name) echo '<br>You are logged in as '.$row_name['name'].'<br><br>';
+            if ($row_name) return '<br>You are logged in as '.$row_name['name'].'<br><br>';
         }
     }
 

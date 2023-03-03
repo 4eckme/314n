@@ -23,7 +23,6 @@
 <script src="js/aplweb.scrollbars2.js" type="text/javascript"></script>
 <script src="js/scroll-startstop.events.jquery.js" type="text/javascript"></script>
 <script src="js/function_up_down.js" type="text/javascript"></script>
-
 <script src="js/main.js" type="text/javascript"></script>
 
 </head>
