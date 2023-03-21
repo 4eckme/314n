@@ -132,7 +132,7 @@ class Console
         session_start();
         
         if (@$_SESSION['edit']) {
-            $input = (isset($_POST['input-type-switch']) && $_POST['input-type-switch']==1)
+            $input = (!isset($_POST['input_i']) || (isset($_POST['multiline']) && $_POST['multiline']==1))
               ? $_POST['input']
               : $_POST['input_i'];
 
