@@ -1,0 +1,3 @@
+.line button[type=submit], label[for='input-type-switch'], #cmd_i {
+  display: none;
+}

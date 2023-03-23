@@ -1,0 +1,84 @@
+.content {
+  display: initial!important;
+}
+button {
+  cursor: pointer;
+  font-family: inherit;
+  background: inherit;
+  color: inherit;
+  border: inherit;
+}
+button:hover {
+  background-color: #5ec0fe;
+  color: #000;
+}
+button::before {
+  content: '[ ';
+}
+button::after {
+  content: ' ]';
+}
+button:active::before {
+  content: ' [';
+}
+button:active::after {
+  content: '] ';
+}
+textarea#cmd, #cmd_i {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: inherit;
+  font-family: inherit;
+  color: inherit;
+}
+.line {
+  margin-top: 10px;
+  width: calc(100% - 20px);
+}
+.input-container {
+  display: flex;
+  flex-direction: row;
+}
+.submit-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 2ch;
+}
+#cmd, #cmd_i {
+  flex-grow: 1;
+}
+.submit-container button {
+  display: none;
+  margin: auto;
+}
+label[for='input-type-switch'] {
+  cursor: pointer;
+}
+label[for='input-type-switch']::before {
+  content: '[ ] ';
+}
+#cmd {
+  display: none;
+  overflow: auto!important;
+  width: auto!important;
+}
+input[name=multiline]:checked + textarea {
+  display: block!important;
+}
+input[name=multiline]:checked + textarea + #cmd_i {
+  display: none!important;
+}
+input[name=multiline]:checked + textarea + #cmd_i + .submit-container label::before  {
+  content: '[x] ';
+}
+input[name=multiline]:checked + textarea + #cmd_i + .submit-container button {
+  display: initial;
+}
+
+input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill,
+input:-webkit-autofill:hover, textarea:-webkit-autofill:hover, select:-webkit-autofill:hover,
+input:-webkit-autofill:focus, textarea:-webkit-autofill:focus, select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #5ec0fe inset; /* Chrome you fucking donkey */
+}

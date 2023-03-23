@@ -1,7 +1,7 @@
 <?php
 
-require_once 'viewer.php';
-require_once 'executer.php';
+require_once 'inc/viewer.php';
+require_once 'inc/executer.php';
 
 class Console
 {
@@ -127,12 +127,16 @@ class Console
         
     }
     
-    public function Console() {
+    public function __construct() {
         $this->init_rules();
         session_start();
         
-        if ($_SESSION['edit']) {
-            $newcontent = str_replace('  ', ' ', htmlspecialchars(trim(addslashes($_POST['input']))));
+        if (@$_SESSION['edit']) {
+            $input = (!isset($_POST['input_i']) || (isset($_POST['multiline']) && $_POST['multiline']==1))
+              ? $_POST['input']
+              : $_POST['input_i'];
+
+            $newcontent = str_replace('  ', ' ', htmlspecialchars(trim(addslashes((string)$input))));
             
             $executer = new Executer();
             $executer->edit_post($_SESSION['edit'], $newcontent);
@@ -143,9 +147,9 @@ class Console
     }
     
     public function parse($input) {
-        $input = str_replace('  ', ' ', htmlspecialchars(trim(addslashes($input))));
+        $input = str_replace('  ', ' ', htmlspecialchars(trim(addslashes((string)$input))));
         list($command) = explode(' ', $input);
-        $command = strtoupper($command);
+        $command = mb_strtoupper($command);
         $argstr = substr($input, strlen($command));
         
         $keys = array();
@@ -172,7 +176,10 @@ class Console
 }
 
     $console = new Console();
-    $console->parse($_GET['input'] ? $_GET['input'] : $_POST['input']);
+    $input = (!isset($_POST['input_i']) || (isset($_POST['multiline']) && $_POST['multiline']==1))
+      ? $_POST['input']
+      : $_POST['input_i'];
+    $console->parse($input);
     $console->execute();
 
 ?>
