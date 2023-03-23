@@ -1,6 +1,6 @@
 <?php
 require_once realpath(dirname(__FILE__)).'/../config.php';
-require_once 'viewer.php';
+require_once realpath(dirname(__FILE__)).'/viewer.php';
 
 mb_internal_encoding('UTF-8');
 
